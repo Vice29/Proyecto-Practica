@@ -1,0 +1,104 @@
+{% extends "SoporteInformatica/layouts/base.html" %}
+{% block content %}
+
+<main class="container">
+    <div class="row">
+        <div class="col-md-4 offset-md-4">
+            <h1 class="text-secondary">Datos de Solicitud:</h1>
+            <strong>Correo: </strong>
+            {{solicitud.correo}}. <br>
+
+            <strong>Nombre: </strong>
+            {{solicitud.nombre}}.<br>
+
+            <strong>Oficina:</strong>
+            {{solicitud.oficina}}. <br>
+            
+            <strong>Relacion del Problema:</strong>
+            {{solicitud.relacion_problema}}. <br>
+
+            <strong>Detalle: </strong>
+            <p class="text-break">{{ solicitud.detalle }}</p>
+            <strong>Estado de la solicitud: </strong> 
+                {% if solicitud.tarea_completada == Null %}
+                Pendiente
+                {% else %}
+                Realizada
+                {% endif %} <br>
+            <strong>
+                Fecha de creacion de la solicitud: <br>
+            </strong>
+            {{solicitud.fecha_creacion}}. <br>
+            <strong>
+                Fecha de realizacion de solicitud: <br>
+            </strong>
+            {{solicitud.tarea_completada}}.
+            
+<script>
+    function mostrarFormulario() {
+        const formDiv = document.getElementById("formulario_actualizacion");
+        const BtnCompleteDiv = document.getElementById("boton_completar");
+        const BtnEliminarDiv = document.getElementById("boton_eliminar");
+        const BtnActualizarDiv = document.getElementById("boton_actualizar")
+
+        if (getComputedStyle(formDiv).display === "none") {
+            formDiv.style.display = "block";
+            BtnCompleteDiv.style.display = "none";
+            BtnEliminarDiv.style.display = "none";
+            BtnActualizarDiv.style.display = "none";
+        } else {
+            formDiv.style.display = "none";
+            BtnCompleteDiv.style.display = "block";
+            BtnEliminarDiv.style.display = "block";
+            BtnActualizarDiv.style.display = "block";
+        }
+    }
+</script>
+
+<div class="mt-5 d-flex">
+            <!-- Boton para actualizar, abre formulario para actulizar solicitud -->
+            <div id="boton_actualizar" style="display: block; margin-top: 20px;">
+                <button onclick="mostrarFormulario()" class="btn btn-primary">
+                    Modificar Solicitud
+                </button>
+            </div>
+
+            <!-- Formulario de Actulizar -->
+            <div id="formulario_actualizacion" style="display: none; margin-top: 20px;">
+                {{error}}
+                <form method="POST">
+                    <h4>Modificar Solicitud</h4>
+                    {% csrf_token %}
+                    {{form.as_p}}
+                    <button class="btn btn-primary">
+                        Modificar
+                    </button>
+                </form>
+            </div>
+
+            <!-- Boton Completar Solicitud -->
+            <div id="boton_completar" style="display: block ; margin-top: 20px;">
+                <form action="{% url 'solicitud_completada' solicitud.id %}" method="POST">
+                    {% csrf_token %}
+                    <button  class="btn btn-secondary">
+                        Completar Solicitud
+                    </button>
+                </form>
+            </div>
+
+
+            <!-- Boton Eliminar Solicitud -->
+                <div id="boton_eliminar" style="display: block; margin-top: 20px;">
+                    <form action="{% url 'solicitud_eliminada' solicitud.id %}" method="POST">
+                        {% csrf_token %}
+                        <button  class="btn btn-danger">
+                            Eliminar Solicitud
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% endblock %}

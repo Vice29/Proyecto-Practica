@@ -1,0 +1,30 @@
+{% extends 'SoporteInformatica/layouts/base.html' %}
+{% block content %}
+
+
+<main class="container py-5">
+    <section class="card card-body">
+        <h1 class="display-1 text-center">
+            {% if request.user.is_authenticated %}
+            Bienvenido, {{request.user}}.
+            {% else %}
+            Bienvenido
+            {% endif %}
+        </h1>
+
+        <div class="text-center">
+            <a class="btn btn-secondary" href="/iniciar_sesion/">
+                Iniciar Sesion
+            </a>
+            <a class="btn btn-dark" href="/registrar_usuario/">
+                Registrar Usuario Nuevo
+            </a>
+        </div>
+
+
+    </section>
+</main>
+
+
+
+{% endblock %}

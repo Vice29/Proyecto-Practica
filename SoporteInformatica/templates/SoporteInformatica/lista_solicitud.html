@@ -1,0 +1,37 @@
+{% extends "SoporteInformatica/layouts/base.html" %}
+{% block content %}
+
+
+<main class="container">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <h1 class="text-center display-3 py-5">Lista de Peticiones</h1>
+            <ul class="list-group">
+                {% for ticket in tickets %}
+                    <a class="list-group-item" href="{% url 'detalle_solicitud' ticket.id %}">
+                        <header class="d-flex justify-content-between">
+                            <h2 class="fw-bold">
+                                ⌚ {{ticket.relacion_problema}}
+                            </h2>
+                            <p>
+                                {{ticket.nombre}}
+                            </p>
+                        </header>
+                        {% if ticket.tarea_completada == Null %}
+                        <p class="text-break">
+                             Solicitud Pendiente
+                        </p>    
+                        {% else %}
+                        <p>
+                           Fecha de realizacion: {{ticket.tarea_completada|date:"d  F  Y, H:i"}}
+                        </p>
+                        {% endif %}
+                    </a>    
+                {% endfor%}
+            </ul>
+        </div>
+    </div>
+</main>
+
+{% endblock %}    
+
