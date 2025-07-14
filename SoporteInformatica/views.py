@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Ticket
 from .forms import FormularioSolicitud
@@ -98,22 +99,37 @@ def registrar_usuario(request):
         return render(request, "SoporteInformatica/registrar_usuario.html", context)
     
     else:
-        if request.POST["password1"] == request.POST["password2"]:
-            #registrar usuario
-            try:
-                username = request.POST["username"]
-                password = request.POST["password1"]
-                nuevo_usuario = User.objects.create_user(username=username, password=password)
-                nuevo_usuario.save()
-                login(request, nuevo_usuario)
-                return redirect("index")
-            except:
-                context = {"form": UserCreationForm, "error": "El usuario ya existe"}
-                return render(request, "SoporteInformatica/registrar_usuario.html", context)
-        else:
-            context = {"form": UserCreationForm, "error": "Las contraseñas no coinciden"}
-            return render(request, "SoporteInformatica/registrar_usuario.html", context)
+        username = request.POST["username"].capitalize()
+        lastname = request.POST["last_name"].capitalize()
+        password1 = request.POST["password1"]
+        password2 = request.POST["password2"]
+        email = request.POST["email"]
         
+        if User.objects.filter(email=email).exists():
+                return render(request, "SoporteInformatica/registrar_usuario.html", {
+                "error": "Ya existe una cuenta con este correo electrónico"})
+                
+        if password1 != password2:
+            return render(request, "SoporteInformatica/registrar_usuario.html", {
+            "error": "Las contraseñas no coinciden"})
+        
+        # Crear usuario nuevo
+        try: 
+            nuevo_usuario = User.objects.create_user(username=username, last_name=lastname, password=password1, email=email)
+            nuevo_usuario.save()
+            
+            #Añadir al grupo de usuarios
+            grupo = Group.objects.get(name="usuario")
+            nuevo_usuario.groups.add(grupo)
+            login(request, nuevo_usuario)
+            return redirect("index")
+        
+        except:
+            context = {"form": UserCreationForm, "error": "El usuario ya existe"}
+            return render(request, "SoporteInformatica/registrar_usuario.html", context)          
+
+
+   
       
 @login_required  
 def cerrar_sesion(request):
@@ -128,9 +144,10 @@ def iniciar_sesion(request):
         return render(request, "SoporteInformatica/iniciar_sesion.html", context)
     
     else:
-        username = request.POST["username"]
+        email = request.POST["email"]
         password = request.POST["password"]
-        user = authenticate(request, username=username, password=password)
+        usuario = User.objects.get(email=email)
+        user = authenticate(request, username=usuario, password=password)
         if user is None:
             context = {"form": AuthenticationForm, "error": "El usuario o la contraseña son incorrectos"}
             return render(request, "SoporteInformatica/iniciar_sesion.html", context)

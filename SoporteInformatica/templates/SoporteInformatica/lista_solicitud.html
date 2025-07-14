@@ -11,10 +11,10 @@
                     <a class="list-group-item" href="{% url 'detalle_solicitud' ticket.id %}">
                         <header class="d-flex justify-content-between">
                             <h2 class="fw-bold">
-                                ⌚ {{ticket.relacion_problema}}
+                                {{ticket.relacion_problema}}
                             </h2>
                             <p>
-                                {{ticket.nombre}}
+                                {{ticket.usuario}} {{ticket.usuario.last_name}}
                             </p>
                         </header>
                         {% if ticket.tarea_completada == Null %}

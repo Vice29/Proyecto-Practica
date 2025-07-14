@@ -10,23 +10,33 @@
                 {{error}}
                 {% csrf_token %}
                 <div class="mb-3">
-                    <label for="username">Usuario:</label>
+                    <label for="username">Nombre:</label>
                     <input type="text" name="username" id="username"
-                        class="form-control" placeholder="Ingrese su usuario">
+                        class="form-control" placeholder="Ingrese su nombre.">
+                </div>
+                <div class="mb-3">
+                    <label for="last_name">Apellido:</label>
+                    <input type="text" name="last_name" id="last_name"
+                        class="form-control" placeholder="Ingrese su apellido.">
+                </div>
+                <div class="mb-3">
+                    <label for="email">Correo:</label>
+                    <input type="email" name="email" id="email"
+                        class="form-control" placeholder="Ingrese su correo electronico.">
                 </div>
                 <div class="mb-3">
                     <label for="password1">Contraseña:</label>
                     <input type="password" name="password1" id="password1"
-                    class="form-control" placeholder="Ingrese su contraseña">
+                    class="form-control" placeholder="Ingrese su contraseña.">
                 </div>
                     <div class="mb-3">
                     <label for="password2">Confirme su Contraseña:</label>
                     <input type="password" name="password2" id="password2"
-                    class="form-control" placeholder="Confirme su contraseña">
+                    class="form-control" placeholder="Confirme su contraseña.">
                 </div>
 
                 <button class="btn btn-primary">
-                    Iniciar Sesion
+                    Registrar Nuevo Usuario
                 </button>
             </form> 
         </div>

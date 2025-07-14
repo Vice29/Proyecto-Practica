@@ -6,10 +6,10 @@
         <div class="col-md-4 offset-md-4">
             <h1 class="text-secondary">Datos de Solicitud:</h1>
             <strong>Correo: </strong>
-            {{solicitud.correo}}. <br>
+            {{solicitud.usuario.email}}. <br>
 
             <strong>Nombre: </strong>
-            {{solicitud.nombre}}.<br>
+            {{solicitud.usuario}} {{solicitud.usuario.last_name}}.<br>
 
             <strong>Oficina:</strong>
             {{solicitud.oficina}}. <br>
@@ -32,7 +32,11 @@
             <strong>
                 Fecha de realizacion de solicitud: <br>
             </strong>
-            {{solicitud.tarea_completada}}.
+            {% if solicitud.tarea_completada == None %}
+                Realizacion pendiente.
+            {% else %}    
+                {{solicitud.tarea_completada}}.
+            {% endif %}
             
 <script>
     function mostrarFormulario() {
