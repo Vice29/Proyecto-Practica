@@ -1,0 +1,74 @@
+{% extends 'SoporteInformatica/layouts/base.html' %}
+{% block content %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const rows = document.querySelectorAll(".clickable-row");
+        rows.forEach(row => {
+            row.addEventListener("click", () => {
+                const href = row.getAttribute("data-href");
+                if (href) {
+                    window.location.href = href;
+                }
+            });
+        });
+    });
+</script>
+
+
+<style>
+    .clickable-row {
+    cursor: pointer;
+}
+</style>
+
+
+<main class="container">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <h1 class="text-center display-3 py-5">Lista de Peticiones Pendientes</h1>
+
+            <table class="table table-hover table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Tipo de Problema</th>
+                        <th scope="col">Usuario</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Fecha de Creacion</th>
+                        <th scope="col">Fecha de Realización</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                     <tr class="clickable-row" data-href="{% url 'detalle_solicitud_admin' ticket.id %}">
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td>{{ ticket.relacion_problema }}</td>
+                        <td>{{ ticket.usuario }} {{ ticket.usuario.last_name }}</td>
+
+                        {% if ticket.tarea_completada %}
+                        <td class="text-success fw-bold">Completado</td>
+                        <td>{{ ticket.tarea_completada|date:"d F Y, H:i" }}</td>
+                        {% else %}
+                        <td class="text-warning fw-bold">Pendiente</td>
+                        <td>{{ ticket.fecha_creacion }}</td>
+                        {% endif %}
+                        
+                        {% if ticket.tarea_completada %}
+                        <td>{{ticket.tarea_completada}}</td>    
+                        {% else %}
+                        <td>---</td>    
+                        {%endif%}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+
+
+
+
+{% endblock %}

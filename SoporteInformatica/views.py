@@ -11,7 +11,40 @@ from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
+# Admin
+@login_required
+def lista_solicitud_admin(request):
+    tickets = Ticket.objects.all().order_by("fecha_creacion")
+    context = {"tickets": tickets}
+    return render(request, "SoporteInformatica/lista_solicitud_admin.html", context)
+ 
 
+def detalle_solicitud_admin(request, solicitud_id):
+    # Actualizar datos de la solicitud desde admin
+    if request.method == "GET":
+        solicitud = get_object_or_404(Ticket, id=solicitud_id, usuario=request.user)
+        form = FormularioSolicitud(instance=solicitud)
+        context = {"solicitud": solicitud, 
+                   "form": form}
+        return render(request, "SoporteInformatica/detalle_solicitud_admin.html", context)
+    
+    else:
+        try:
+            solicitud = get_object_or_404(Ticket, id=solicitud_id, usuario=request.user)
+            form = FormularioSolicitud(request.POST, instance=solicitud)
+            form.save()
+            context = {"solicitud": solicitud, 
+                       "form": form}
+            return render(request, "SoporteInformatica/detalle_solicitud_admin.html", context)
+
+        except ValueError:
+            context = {"solicitud": solicitud, 
+                       "form": form,
+                       "error": "Error al actualizar la solicitud"}
+            return render(request, "SoporteInformatica/detalle_solicitud_admin.html", context)
+
+
+# usuarios 
 def index(request):
     return render(request, "SoporteInformatica/index.html")
 
@@ -121,15 +154,12 @@ def registrar_usuario(request):
             #Añadir al grupo de usuarios
             grupo = Group.objects.get(name="usuario")
             nuevo_usuario.groups.add(grupo)
-            login(request, nuevo_usuario)
-            return redirect("index")
+            return redirect("iniciar_sesion")
         
         except:
             context = {"form": UserCreationForm, "error": "El usuario ya existe"}
             return render(request, "SoporteInformatica/registrar_usuario.html", context)          
-
-
-   
+          
       
 @login_required  
 def cerrar_sesion(request):
@@ -138,20 +168,30 @@ def cerrar_sesion(request):
 
 
 def iniciar_sesion(request):
-    print(request.POST) 
     if request.method == "GET":
-        context = {"form": AuthenticationForm}
+        context = {"form": AuthenticationForm()}
         return render(request, "SoporteInformatica/iniciar_sesion.html", context)
     
     else:
-        email = request.POST["email"]
-        password = request.POST["password"]
-        usuario = User.objects.get(email=email)
-        user = authenticate(request, username=usuario, password=password)
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        try:
+            usuario = User.objects.get(email=email)
+        except User.DoesNotExist:
+            context = {"form": AuthenticationForm(), "error": "Usuario no existe"}
+            return render(request, "SoporteInformatica/iniciar_sesion.html", context)
+
+        user = authenticate(request, username=usuario.username, password=password)
+
         if user is None:
-            context = {"form": AuthenticationForm, "error": "El usuario o la contraseña son incorrectos"}
+            context = {"form": AuthenticationForm(), "error": "El usuario o la contraseña son incorrectos"}
             return render(request, "SoporteInformatica/iniciar_sesion.html", context)
         
+        login(request, user)
+
+        if user.is_staff or user.groups.filter(name="admin").exists():
+            # si es admin lo manda aqui
+            return redirect("lista_solicitud_admin")
         else:
-            login(request, user)
             return redirect("index")
