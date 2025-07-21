@@ -35,15 +35,15 @@
     <div class="row">
         <div class="col-12">
 
-        <form method="get" class="form-inline mb-3">
-            <div class="form-group mr-2">
-                {{ form.usuario.label_tag }}
-                {{ form.usuario }}
-            </div>
-            <button type="submit" class="btn btn-primary">Filtrar</button>
-        </form>
-
+            
             <h1 class="text-center display-3 py-5">{{peticion}}</h1>
+            <form method="get" class="form-inline mb-3">
+                <div class="form-group mr-2">
+                    {{ form.usuario.label_tag }}
+                    {{ form.usuario }}
+                </div>
+                <button type="submit" class="btn btn-primary">Filtrar</button>
+            </form>
 
             <table class="table table-hover table-bordered">
                 <thead class="thead-dark">
