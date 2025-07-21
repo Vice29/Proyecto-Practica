@@ -1,18 +1,56 @@
 from django.contrib.auth.models import Group
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Ticket
-from .forms import FormularioSolicitud
+from .forms import FormularioSolicitud, FormularioSeleccionUsuario
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.contrib.auth import login, logout, authenticate
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 
 # Create your views here.
 
 # Admin
-@login_required
+@staff_member_required
+def registrar_usuario(request):
+    if request.method == "GET":
+        context = {"form": UserCreationForm}
+        return render(request, "SoporteInformatica/registrar_usuario.html", context)
+    
+    else:
+        first_name = request.POST["first_name"].lower().capitalize()
+        lastname = request.POST["last_name"].lower().capitalize()
+        username = first_name + " " + lastname
+        password1 = request.POST["password1"]
+        password2 = request.POST["password2"]
+        email = request.POST["email"]
+        
+        if User.objects.filter(email=email).exists():
+                return render(request, "SoporteInformatica/registrar_usuario.html", {
+                "error": "Ya existe una cuenta con este correo electrónico, ingrese otra distinta."})
+                
+        if password1 != password2:
+            return render(request, "SoporteInformatica/registrar_usuario.html", {
+            "error": "Las contraseñas no coinciden, intente denuevo."})
+        
+        # Crear usuario nuevo
+        try: 
+            nuevo_usuario = User.objects.create_user(username=username, first_name=first_name, last_name=lastname, password=password1, email=email)
+            nuevo_usuario.save()
+            
+            #Añadir al grupo de usuarios
+            grupo = Group.objects.get(name="usuario")
+            nuevo_usuario.groups.add(grupo)
+            return redirect("iniciar_sesion")
+        
+        except:
+            context = {"form": UserCreationForm, "error": "El usuario ya existe"}
+            return render(request, "SoporteInformatica/registrar_usuario.html", context)          
+          
+
+@staff_member_required
 def detalle_solicitud_admin(request, solicitud_id):
     # Actualizar datos de la solicitud desde admin
     if request.method == "GET":
@@ -38,21 +76,39 @@ def detalle_solicitud_admin(request, solicitud_id):
             return render(request, "SoporteInformatica/detalle_solicitud_admin.html", context)
 
 
-@login_required
+@staff_member_required
 def lista_solicitud_admin(request):
+    form = FormularioSeleccionUsuario(request.GET or None)
     tickets = Ticket.objects.filter(tarea_completada__isnull=True).order_by("fecha_creacion")
-    context = {"tickets": tickets, "peticion": "Peticiones Pendientes"}
+    
+    if form.is_valid() and form.cleaned_data["usuario"]:
+        usuario = form.cleaned_data["usuario"]
+        tickets = tickets.filter(usuario=usuario)
+    
+    context = {"tickets": tickets, 
+               "peticion": "Peticiones Pendientes",
+               "form": form}
+    
     return render(request, "SoporteInformatica/lista_solicitud_admin.html", context)
  
 
-@login_required  
+@staff_member_required  
 def solicitudes_completadas_admin(request):
+    form = FormularioSeleccionUsuario(request.GET or None)
     tickets = Ticket.objects.filter(tarea_completada__isnull = False).order_by("-tarea_completada")
-    context = {"tickets": tickets, "peticion": "Peticiones Completadas"}
+    
+    if form.is_valid() and form.cleaned_data["usuario"]:
+        usuario = form.cleaned_data["usuario"]
+        tickets = tickets.filter(usuario=usuario)
+    
+    context = {"tickets": tickets,
+               "peticion": "Peticiones Completadas",
+               "form": form}
+    
     return render(request, "SoporteInformatica/lista_solicitud_admin.html", context)
 
 
-@login_required
+@staff_member_required
 def solicitud_completada_admin(request, solicitud_id):
     solicitud = get_object_or_404(Ticket, pk=solicitud_id)
     if request.method == "POST":
@@ -61,7 +117,7 @@ def solicitud_completada_admin(request, solicitud_id):
         return redirect("lista_solicitud_admin")
 
 
-@login_required
+@staff_member_required
 def solicitud_eliminada_admin(request, solicitud_id):
     solicitud = get_object_or_404(Ticket, pk=solicitud_id)
     if request.method == "POST":
@@ -69,7 +125,7 @@ def solicitud_eliminada_admin(request, solicitud_id):
         return redirect("lista_solicitud_admin")
 
 
-@login_required
+@staff_member_required
 def solicitud_incompletar_admin(request, solicitud_id):
     solicitud = get_object_or_404(Ticket, pk=solicitud_id)
     if request.method == "POST":
@@ -151,43 +207,6 @@ def solicitud_eliminada(request, solicitud_id):
         return redirect("lista_solicitud")
 
 
-@login_required
-# Aqui falta poner que solo pueda el admin crear usuarios. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-def registrar_usuario(request):
-    if request.method == "GET":
-        context = {"form": UserCreationForm}
-        return render(request, "SoporteInformatica/registrar_usuario.html", context)
-    
-    else:
-        first_name = request.POST["first_name"].lower().capitalize()
-        lastname = request.POST["last_name"].lower().capitalize()
-        username = first_name + " " + lastname
-        password1 = request.POST["password1"]
-        password2 = request.POST["password2"]
-        email = request.POST["email"]
-        
-        if User.objects.filter(email=email).exists():
-                return render(request, "SoporteInformatica/registrar_usuario.html", {
-                "error": "Ya existe una cuenta con este correo electrónico, ingrese otra distinta."})
-                
-        if password1 != password2:
-            return render(request, "SoporteInformatica/registrar_usuario.html", {
-            "error": "Las contraseñas no coinciden, intente denuevo."})
-        
-        # Crear usuario nuevo
-        try: 
-            nuevo_usuario = User.objects.create_user(username=username, first_name=first_name, last_name=lastname, password=password1, email=email)
-            nuevo_usuario.save()
-            
-            #Añadir al grupo de usuarios
-            grupo = Group.objects.get(name="usuario")
-            nuevo_usuario.groups.add(grupo)
-            return redirect("iniciar_sesion")
-        
-        except:
-            context = {"form": UserCreationForm, "error": "El usuario ya existe"}
-            return render(request, "SoporteInformatica/registrar_usuario.html", context)          
-          
       
 @login_required  
 def cerrar_sesion(request):
@@ -222,4 +241,5 @@ def iniciar_sesion(request):
             # si es admin lo manda aqui
             return redirect("lista_solicitud_admin")
         else:
+            #si es normal lo manda aqui
             return redirect("index")
