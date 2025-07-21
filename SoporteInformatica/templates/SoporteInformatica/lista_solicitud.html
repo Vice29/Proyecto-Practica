@@ -2,24 +2,39 @@
 {% block content %}
 
 
-<main class="container">
+<style>
+.detalle-ticket {
+    max-width: 600px;   /* Ajusta este valor según lo que necesites */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    padding: 10px;
+    background-color: #f8f9fa; /* Color suave */
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+</style>
+
+
+<main class="container-fluid">
     <div class="row">
-        <div class="col-md-6 offset-md-3">
-            <h1 class="text-center display-3 py-5">Lista de Peticiones</h1>
+        <div class="col 12">
+            <h1 class="text-center display-3 py-5">{{peticion}}</h1>
             <ul class="list-group">
                 {% for ticket in tickets %}
-                    <a class="list-group-item" href="{% url 'detalle_solicitud' ticket.id %}">
+                   <a class="list-group-item {% if ticket.tarea_completada %}list-group-item-success{% endif %}" href="{% url 'detalle_solicitud' ticket.id %}">
                         <header class="d-flex justify-content-between">
                             <h2 class="fw-bold">
                                 {{ticket.relacion_problema}}
                             </h2>
-                            <p>
-                                {{ticket.usuario}} {{ticket.usuario.last_name}}
+                            <p class="detalle-ticket">
+                                {{ticket.detalle}}
                             </p>
                         </header>
                         {% if ticket.tarea_completada == Null %}
                         <p class="text-break">
-                             Solicitud Pendiente
+                             Fecha de creacion: {{ticket.fecha_creacion}}
                         </p>    
                         {% else %}
                         <p>

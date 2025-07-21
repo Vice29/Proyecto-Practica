@@ -6,7 +6,7 @@
     <section class="card card-body">
         <h1 class="display-1 text-center">
             {% if request.user.is_authenticated %}
-            Bienvenido, {{request.user}} {{request.user.last_name}}.
+            Bienvenido, {{request.user}}.
             {% else %}
             Bienvenido
             {% endif %}
@@ -14,18 +14,12 @@
 
         <div class="text-center">
             {% if request.user.is_authenticated %}
-            <a class="btn btn-dark" href="/registrar_usuario/">
-                Registrar Usuario Nuevo
-            </a>
             <a class="btn btn-secondary" href="{% url 'cerrar_sesion' %}">
                 Cerrar Sesion
             </a>
             {% else %}
             <a class="btn btn-secondary" href="/iniciar_sesion/">
                 Iniciar Sesion
-            </a>
-            <a class="btn btn-dark" href="/registrar_usuario/">
-                Registrar Usuario Nuevo
             </a>
             {% endif %}
         </div>

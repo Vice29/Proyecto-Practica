@@ -8,7 +8,11 @@
         <form method="POST" class="card card-body">
             {% csrf_token %}
             <h1 class="text-center">Inicio de Sesion</h1>
-            {{error}}
+            {% if error %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ error }}
+                </div>
+            {% endif %}
         <div class="mb-3">
             <label for="email">Correo:</label>
             <input type="email" name="email" id="email"

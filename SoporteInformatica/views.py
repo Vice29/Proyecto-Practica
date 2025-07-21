@@ -13,16 +13,10 @@ from django.contrib.auth.decorators import login_required
 
 # Admin
 @login_required
-def lista_solicitud_admin(request):
-    tickets = Ticket.objects.all().order_by("fecha_creacion")
-    context = {"tickets": tickets}
-    return render(request, "SoporteInformatica/lista_solicitud_admin.html", context)
- 
-
 def detalle_solicitud_admin(request, solicitud_id):
     # Actualizar datos de la solicitud desde admin
     if request.method == "GET":
-        solicitud = get_object_or_404(Ticket, id=solicitud_id, usuario=request.user)
+        solicitud = get_object_or_404(Ticket, id=solicitud_id)
         form = FormularioSolicitud(instance=solicitud)
         context = {"solicitud": solicitud, 
                    "form": form}
@@ -30,7 +24,7 @@ def detalle_solicitud_admin(request, solicitud_id):
     
     else:
         try:
-            solicitud = get_object_or_404(Ticket, id=solicitud_id, usuario=request.user)
+            solicitud = get_object_or_404(Ticket, id=solicitud_id)
             form = FormularioSolicitud(request.POST, instance=solicitud)
             form.save()
             context = {"solicitud": solicitud, 
@@ -44,6 +38,46 @@ def detalle_solicitud_admin(request, solicitud_id):
             return render(request, "SoporteInformatica/detalle_solicitud_admin.html", context)
 
 
+@login_required
+def lista_solicitud_admin(request):
+    tickets = Ticket.objects.filter(tarea_completada__isnull=True).order_by("fecha_creacion")
+    context = {"tickets": tickets, "peticion": "Peticiones Pendientes"}
+    return render(request, "SoporteInformatica/lista_solicitud_admin.html", context)
+ 
+
+@login_required  
+def solicitudes_completadas_admin(request):
+    tickets = Ticket.objects.filter(tarea_completada__isnull = False).order_by("-tarea_completada")
+    context = {"tickets": tickets, "peticion": "Peticiones Completadas"}
+    return render(request, "SoporteInformatica/lista_solicitud_admin.html", context)
+
+
+@login_required
+def solicitud_completada_admin(request, solicitud_id):
+    solicitud = get_object_or_404(Ticket, pk=solicitud_id)
+    if request.method == "POST":
+        solicitud.tarea_completada = timezone.now()
+        solicitud.save()
+        return redirect("lista_solicitud_admin")
+
+
+@login_required
+def solicitud_eliminada_admin(request, solicitud_id):
+    solicitud = get_object_or_404(Ticket, pk=solicitud_id)
+    if request.method == "POST":
+        solicitud.delete()
+        return redirect("lista_solicitud_admin")
+
+
+@login_required
+def solicitud_incompletar_admin(request, solicitud_id):
+    solicitud = get_object_or_404(Ticket, pk=solicitud_id)
+    if request.method == "POST":
+        solicitud.tarea_completada = None
+        solicitud.save()
+        return redirect("lista_solicitud_admin")
+
+
 # usuarios 
 def index(request):
     return render(request, "SoporteInformatica/index.html")
@@ -52,14 +86,14 @@ def index(request):
 @login_required
 def lista_solicitud(request):
     tickets = Ticket.objects.filter(usuario=request.user, tarea_completada__isnull = True)
-    context = {"tickets": tickets}
+    context = {"tickets": tickets, "peticion": "Sus Solicitudes Pendientes"}
     return render(request, "SoporteInformatica/lista_solicitud.html", context)
- 
- 
+
+
 @login_required  
 def solicitudes_completadas(request):
-    tickets = Ticket.objects.filter(usuario=request.user, tarea_completada__isnull = False).order_by("-tarea_completada")
-    context = {"tickets": tickets}
+    tickets = Ticket.objects.filter(usuario = request.user, tarea_completada__isnull = False).order_by("-tarea_completada")
+    context = {"tickets": tickets, "peticion": "Sus Peticiones Completadas"}
     return render(request, "SoporteInformatica/lista_solicitud.html", context)
 
 
@@ -110,15 +144,6 @@ def detalle_solicitud(request, solicitud_id):
         
 
 @login_required
-def solicitud_completada(request, solicitud_id):
-    solicitud = get_object_or_404(Ticket, pk=solicitud_id, usuario=request.user)
-    if request.method == "POST":
-        solicitud.tarea_completada = timezone.now()
-        solicitud.save()
-        return redirect("lista_solicitud")
-
-
-@login_required
 def solicitud_eliminada(request, solicitud_id):
     solicitud = get_object_or_404(Ticket, pk=solicitud_id, usuario=request.user)
     if request.method == "POST":
@@ -126,29 +151,32 @@ def solicitud_eliminada(request, solicitud_id):
         return redirect("lista_solicitud")
 
 
+@login_required
+# Aqui falta poner que solo pueda el admin crear usuarios. !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 def registrar_usuario(request):
     if request.method == "GET":
         context = {"form": UserCreationForm}
         return render(request, "SoporteInformatica/registrar_usuario.html", context)
     
     else:
-        username = request.POST["username"].capitalize()
-        lastname = request.POST["last_name"].capitalize()
+        first_name = request.POST["first_name"].lower().capitalize()
+        lastname = request.POST["last_name"].lower().capitalize()
+        username = first_name + " " + lastname
         password1 = request.POST["password1"]
         password2 = request.POST["password2"]
         email = request.POST["email"]
         
         if User.objects.filter(email=email).exists():
                 return render(request, "SoporteInformatica/registrar_usuario.html", {
-                "error": "Ya existe una cuenta con este correo electrónico"})
+                "error": "Ya existe una cuenta con este correo electrónico, ingrese otra distinta."})
                 
         if password1 != password2:
             return render(request, "SoporteInformatica/registrar_usuario.html", {
-            "error": "Las contraseñas no coinciden"})
+            "error": "Las contraseñas no coinciden, intente denuevo."})
         
         # Crear usuario nuevo
         try: 
-            nuevo_usuario = User.objects.create_user(username=username, last_name=lastname, password=password1, email=email)
+            nuevo_usuario = User.objects.create_user(username=username, first_name=first_name, last_name=lastname, password=password1, email=email)
             nuevo_usuario.save()
             
             #Añadir al grupo de usuarios

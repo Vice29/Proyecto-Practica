@@ -1,108 +1,111 @@
 {% extends "SoporteInformatica/layouts/base.html" %}
 {% block content %}
 
-<main class="container">
-    <div class="row">
-        <div class="col-md-4 offset-md-4">
-            <h1 class="text-secondary">Datos de Solicitud:</h1>
-            <strong>Correo: </strong>
-            {{solicitud.usuario.email}}. <br>
+<main class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
 
-            <strong>Nombre: </strong>
-            {{solicitud.usuario}} {{solicitud.usuario.last_name}}.<br>
+            <!-- Tarjeta completa -->
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Detalle de la Solicitud</h3>
+                </div>
 
-            <strong>Oficina:</strong>
-            {{solicitud.oficina}}. <br>
-            
-            <strong>Relacion del Problema:</strong>
-            {{solicitud.relacion_problema}}. <br>
+                <div class="card-body">
 
-            <strong>Detalle: </strong>
-            <p class="text-break">{{ solicitud.detalle }}</p>
-            <strong>Estado de la solicitud: </strong> 
-                {% if solicitud.tarea_completada == Null %}
-                Pendiente
-                {% else %}
-                Realizada
-                {% endif %} <br>
-            <strong>
-                Fecha de creacion de la solicitud: <br>
-            </strong>
-            {{solicitud.fecha_creacion}}. <br>
-            <strong>
-                Fecha de realizacion de solicitud: <br>
-            </strong>
-            {% if solicitud.tarea_completada == None %}
-                Realizacion pendiente.
-            {% else %}    
-                {{solicitud.tarea_completada}}.
-            {% endif %}
-            
+                    <!-- Sección de datos de usuario -->
+                    <h5 class="text-secondary">Datos del Usuario</h5>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item"><strong>Correo:</strong> {{ solicitud.usuario.email }}</li>
+                        <li class="list-group-item"><strong>Nombre:</strong> {{ solicitud.usuario }} </li>
+                        <li class="list-group-item"><strong>Oficina:</strong> {{ solicitud.oficina }}</li>
+                    </ul>
+
+                    <!-- Sección de datos de la solicitud -->
+                    <h5 class="text-secondary">Datos de la Solicitud</h5>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item"><strong>Relación del Problema:</strong> {{ solicitud.relacion_problema }}</li>
+                        <li class="list-group-item"><strong>Detalle:</strong> <p class="text-break mb-0">{{ solicitud.detalle }}</p></li>
+                        <li class="list-group-item">
+                            <strong>Estado de la Solicitud:</strong>
+                            {% if solicitud.tarea_completada %}
+                                <span class="badge bg-success">Realizada</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pendiente</span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item"><strong>Fecha de creación:</strong> {{ solicitud.fecha_creacion }}</li>
+                        <li class="list-group-item">
+                            <strong>Fecha de realización:</strong>
+                            {% if solicitud.tarea_completada %}
+                                {{ solicitud.tarea_completada }}
+                            {% else %}
+                                Realización pendiente.
+                            {% endif %}
+                        </li>
+                    </ul>
+
+                    <!-- Botones -->
+                    <div class="mt-4 d-flex flex-wrap gap-3">
+
+                        
+                        <!-- Formulario de Actualización -->
+                        <div id="formulario_actualizacion" style="display: none;" class="w-100">
+                            {% if error %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                {{ error }}
+                            </div>
+                            {% endif %}
+                            <form method="POST" class="mt-3">
+                                <h5>Modificar Solicitud</h5>
+                                {% csrf_token %}
+                                {{ form.as_p }}
+                                <button class="btn btn-primary">Modificar</button>
+                            </form>
+                        </div>
+                        
+                        {% if solicitud.tarea_completada == None%} 
+                        <!-- Botón Actualizar -->
+                        <div id="boton_actualizar" style="display: block;">
+                            <button onclick="mostrarFormulario()" class="btn btn-outline-primary">
+                                Modificar Solicitud
+                            </button>
+                        </div>
+
+                        <!-- Botón Eliminar -->
+                        <div id="boton_eliminar" style="display: block;">
+                            <form action="{% url 'solicitud_eliminada' solicitud.id %}" method="POST">
+                                {% csrf_token %}
+                                <button class="btn btn-danger">
+                                    Eliminar Solicitud
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
 <script>
     function mostrarFormulario() {
         const formDiv = document.getElementById("formulario_actualizacion");
-        const BtnCompleteDiv = document.getElementById("boton_completar");
         const BtnEliminarDiv = document.getElementById("boton_eliminar");
-        const BtnActualizarDiv = document.getElementById("boton_actualizar")
+        const BtnActualizarDiv = document.getElementById("boton_actualizar");
 
         if (getComputedStyle(formDiv).display === "none") {
             formDiv.style.display = "block";
-            BtnCompleteDiv.style.display = "none";
             BtnEliminarDiv.style.display = "none";
             BtnActualizarDiv.style.display = "none";
         } else {
             formDiv.style.display = "none";
-            BtnCompleteDiv.style.display = "block";
             BtnEliminarDiv.style.display = "block";
             BtnActualizarDiv.style.display = "block";
         }
     }
 </script>
-
-<div class="mt-5 d-flex">
-            <!-- Boton para actualizar, abre formulario para actulizar solicitud -->
-            <div id="boton_actualizar" style="display: block; margin-top: 20px;">
-                <button onclick="mostrarFormulario()" class="btn btn-primary">
-                    Modificar Solicitud
-                </button>
-            </div>
-
-            <!-- Formulario de Actulizar -->
-            <div id="formulario_actualizacion" style="display: none; margin-top: 20px;">
-                {{error}}
-                <form method="POST">
-                    <h4>Modificar Solicitud</h4>
-                    {% csrf_token %}
-                    {{form.as_p}}
-                    <button class="btn btn-primary">
-                        Modificar
-                    </button>
-                </form>
-            </div>
-
-            <!-- Boton Completar Solicitud -->
-            <div id="boton_completar" style="display: block ; margin-top: 20px;">
-                <form action="{% url 'solicitud_completada' solicitud.id %}" method="POST">
-                    {% csrf_token %}
-                    <button  class="btn btn-secondary">
-                        Completar Solicitud
-                    </button>
-                </form>
-            </div>
-
-
-            <!-- Boton Eliminar Solicitud -->
-                <div id="boton_eliminar" style="display: block; margin-top: 20px;">
-                    <form action="{% url 'solicitud_eliminada' solicitud.id %}" method="POST">
-                        {% csrf_token %}
-                        <button  class="btn btn-danger">
-                            Eliminar Solicitud
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</main>
 
 {% endblock %}

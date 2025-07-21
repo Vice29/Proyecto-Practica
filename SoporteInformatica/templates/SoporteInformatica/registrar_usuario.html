@@ -7,11 +7,15 @@
         <div class="col-md-4 offset-md-4 mt-5">
             <form method="POST" class="card card-body">
                 <h1 class="text-center">Registro de Usuario</h1>
-                {{error}}
+                {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ error }}
+                    </div>
+                {% endif %}
                 {% csrf_token %}
                 <div class="mb-3">
-                    <label for="username">Nombre:</label>
-                    <input type="text" name="username" id="username"
+                    <label for="first_name">Nombre:</label>
+                    <input type="text" name="first_name" id="first_name"
                         class="form-control" placeholder="Ingrese su nombre.">
                 </div>
                 <div class="mb-3">
