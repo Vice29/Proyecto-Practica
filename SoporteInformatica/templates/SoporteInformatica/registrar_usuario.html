@@ -33,11 +33,21 @@
                     <input type="password" name="password1" id="password1"
                     class="form-control" placeholder="Ingrese su contraseña.">
                 </div>
-                    <div class="mb-3">
+                <div class="mb-3">
                     <label for="password2">Confirme su Contraseña:</label>
                     <input type="password" name="password2" id="password2"
                     class="form-control" placeholder="Confirme su contraseña.">
                 </div>
+
+                <div class="mb-3">
+                    <div class="p-3 border border-warning bg-warning-subtle rounded d-flex align-items-center gap-2">
+                        <input type="checkbox" class="form-check-input m-0" id="es_admin" name="es_admin">
+                        <label class="form-check-label fw-semibold text-dark m-0" for="es_admin">
+                            ⚠ Usuario tipo Staff / Admin
+                        </label>
+                    </div>
+                </div>
+
 
                 <button class="btn btn-primary">
                     Registrar Nuevo Usuario
@@ -46,6 +56,15 @@
         </div>
     </div>
     
+<style>
+    input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #000 !important; /* Borde oscuro */
+  accent-color: #343a40; /* Color del check (moderno, soportado en la mayoría de navegadores) */
+  cursor: pointer;
+}
+</style>
 
 </main>
 {% endblock %}

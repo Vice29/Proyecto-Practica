@@ -26,6 +26,7 @@ def registrar_usuario(request):
         password1 = request.POST["password1"]
         password2 = request.POST["password2"]
         email = request.POST["email"]
+        es_admin = request.POST.get("es_admin") == "on"
         
         if User.objects.filter(email=email).exists():
                 return render(request, "SoporteInformatica/registrar_usuario.html", {
@@ -37,14 +38,24 @@ def registrar_usuario(request):
         
         # Crear usuario nuevo
         try: 
-            nuevo_usuario = User.objects.create_user(username=username, first_name=first_name, last_name=lastname, password=password1, email=email)
-            nuevo_usuario.save()
+            nuevo_usuario = User.objects.create_user(username=username, 
+                                                     first_name=first_name, 
+                                                     last_name=lastname, 
+                                                     password=password1, 
+                                                     email=email)
             
-            #Añadir al grupo de usuarios
-            grupo = Group.objects.get(name="usuario")
-            nuevo_usuario.groups.add(grupo)
+            if es_admin:
+                nuevo_usuario.is_staff = True
+                nuevo_usuario.is_superuser = True
+            
+            else:
+                #Añadir al grupo de usuarios
+                grupo = Group.objects.get(name="usuario")
+                nuevo_usuario.groups.add(grupo)
+            
+            nuevo_usuario.save()
             return redirect("iniciar_sesion")
-        
+            
         except:
             context = {"form": UserCreationForm, "error": "El usuario ya existe"}
             return render(request, "SoporteInformatica/registrar_usuario.html", context)          
